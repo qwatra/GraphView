@@ -13,8 +13,23 @@ export interface Link {
   
 export class GraphModel extends BaseModel {
 
-  protected links: Array<Link>;
-  protected nodes: Array<Node>;
+  links: Array<Link>;
+  nodes: Array<Node>;
+
+  //Метод по координатам мыши определяет индекс
+  //узла на которой наведена мышь
+  getElementIndexByCoord(x:number, y:number) {
+    let index = -1;
+    for(let i = 0; i < this.nodes.length; i++) {
+      if(x >= this.nodes[i].pos[0] && 
+        x <= this.nodes[i].pos[0] && 
+        y >= this.nodes[i].pos[1] && 
+        y<=this.nodes[i].pos[1]) {
+          index = i;
+      }
+    }
+    return index;
+  }
 
   // должен вернуть массив всех связей узлов
   getLinks(): Array<Link> {
