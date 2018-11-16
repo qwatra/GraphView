@@ -43,7 +43,6 @@ function generate() {
     };
   });
   
-  console.log(nodes, links)
   model.setNodesAndLinks(nodes, links);
 }
 

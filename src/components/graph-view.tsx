@@ -14,8 +14,6 @@ export class GraphView extends React.Component<Props, {}> {
   componentDidMount() { this.drawGraph(); }
   componentDidUpdate() { this.drawGraph(); }
 
-  protected pervPos:Array<number> = null;
-
   //Отрисовка графа
   drawGraph() {
     let nodes:Array<Node> = this.props.model.getNodes();
@@ -30,20 +28,19 @@ export class GraphView extends React.Component<Props, {}> {
     //рисуем дуги
     for(let i = 0; links && i < links.length; i++) {
       ctx.beginPath();
+      ctx.strokeStyle = "black";
       ctx.moveTo(nodes[links[i].from].pos[0]+nodeSize.width/2, nodes[links[i].from].pos[1]+nodeSize.height/2);
       ctx.lineTo(nodes[links[i].to].pos[0]+nodeSize.width/2, nodes[links[i].to].pos[1]+nodeSize.height/2);
       ctx.stroke();
     }
     
     //рисуем узлы
-    ctx.strokeStyle = "black";
     ctx.lineWidth = "2"
     for(let i = 0; nodes && i < nodes.length; i++) {
-      
       if(nodes[i].selected) {
-        console.log(1)
         ctx.beginPath();
-        ctx.rect(nodes[i].pos[0], nodes[i].pos[1], nodeSize.width, nodeSize.height); //задает координаты прямиугольника
+        ctx.strokeStyle = "black";
+        ctx.rect(nodes[i].pos[0], nodes[i].pos[1], nodeSize.width, nodeSize.height);
         ctx.stroke(); //рисует прямоугольник
         ctx.fillStyle = nodes[i].color;
         ctx.fill(); //заливает прямоугоьник
@@ -56,23 +53,34 @@ export class GraphView extends React.Component<Props, {}> {
         nodes[i].pos[0]+nodeSize.width/2-charWidth*nodes[i].label.length/2, 
         nodes[i].pos[1]+nodeSize.height/2+charWidth/2);
     }
+
+    //рисуем область выделения если она есть 
+    let sa = this.props.model.getSelectionArea();
+    if(sa) {
+      ctx.beginPath();
+      ctx.strokeStyle = "blue";
+      ctx.rect(...sa);
+      ctx.stroke();
+    }
   }
 
   onMouseDownCanvas(event: React.MouseEvent<HTMLElement>) {
-    this.pervPos = [event.nativeEvent.offsetX, event.nativeEvent.offsetY]
-    if(this.props.model.setMarkNode(event.nativeEvent.offsetX, event.nativeEvent.offsetY)) {
-      (this.refs.canvas as HTMLElement).onmousemove = 
+    this.props.model.onMouseDown(event.nativeEvent.offsetX, event.nativeEvent.offsetY, event.ctrlKey);
+    (this.refs.canvas as HTMLElement).onmousemove = 
         function(e:MouseEvent) {
-          this.props.model.moveMarkNode(e.offsetX-this.pervPos[0], e.offsetY-this.pervPos[1]);
-          this.pervPos = [e.offsetX, e.offsetY];
+          this.props.model.onMouseMove(e.offsetX, e.offsetY);
         }.bind(this);
-    }
+  }
+
+  onMouseUpCanvas(event: React.MouseEvent<HTMLElement>) {
+    this.props.model.onMouseUp(event.nativeEvent.offsetX, event.nativeEvent.offsetY, event.ctrlKey);
+    (event.nativeEvent.target as HTMLElement).onmousemove = null;
   }
 
   render() {
     return (
       <canvas ref="canvas" width={this.props.size.width} height={this.props.size.height} onMouseDown={this.onMouseDownCanvas.bind(this)} 
-        onMouseUp={event=> (event.nativeEvent.target as HTMLElement).onmousemove = null}
+        onMouseUp={this.onMouseUpCanvas.bind(this)}
         style={{border: "1px solid black"}}/>
     );
   }
