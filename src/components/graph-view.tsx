@@ -6,8 +6,6 @@ interface Props {
   size: {width:number, height:number};
 }
 
-const rectWidth = 40;
-const rectHeight = 40;
 const charWidth = 10;
 
 export class GraphView extends React.Component<Props, {}> {
@@ -16,10 +14,13 @@ export class GraphView extends React.Component<Props, {}> {
   componentDidMount() { this.drawGraph(); }
   componentDidUpdate() { this.drawGraph(); }
 
+  protected pervPos:Array<number> = null;
+
   //Отрисовка графа
   drawGraph() {
     let nodes:Array<Node> = this.props.model.getNodes();
     let links:Array<Link> = this.props.model.getLinks();
+    let nodeSize = this.props.model.getNodeSize();
 
     const ctx = (this.refs.canvas as any).getContext('2d');
     ctx.font = "italic 14pt Arial"
@@ -29,29 +30,43 @@ export class GraphView extends React.Component<Props, {}> {
     //рисуем дуги
     for(let i = 0; links && i < links.length; i++) {
       ctx.beginPath();
-      ctx.moveTo(nodes[links[i].from].pos[0]+rectWidth/2, nodes[links[i].from].pos[1]+rectHeight/2);
-      ctx.lineTo(nodes[links[i].to].pos[0]+rectWidth/2, nodes[links[i].to].pos[1]+rectHeight/2);
+      ctx.moveTo(nodes[links[i].from].pos[0]+nodeSize.width/2, nodes[links[i].from].pos[1]+nodeSize.height/2);
+      ctx.lineTo(nodes[links[i].to].pos[0]+nodeSize.width/2, nodes[links[i].to].pos[1]+nodeSize.height/2);
       ctx.stroke();
     }
     
     //рисуем узлы
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = "2"
     for(let i = 0; nodes && i < nodes.length; i++) {
-      ctx.fillStyle = nodes[i].color;
-      ctx.fillRect(nodes[i].pos[0], nodes[i].pos[1], rectWidth, rectHeight);
+      
+      if(nodes[i].selected) {
+        console.log(1)
+        ctx.beginPath();
+        ctx.rect(nodes[i].pos[0], nodes[i].pos[1], nodeSize.width, nodeSize.height); //задает координаты прямиугольника
+        ctx.stroke(); //рисует прямоугольник
+        ctx.fillStyle = nodes[i].color;
+        ctx.fill(); //заливает прямоугоьник
+      } else {
+        ctx.fillStyle = nodes[i].color;
+        ctx.fillRect(nodes[i].pos[0], nodes[i].pos[1], nodeSize.width, nodeSize.height);
+      }
       ctx.fillStyle = 'black';
       ctx.fillText(nodes[i].label, 
-        nodes[i].pos[0]+rectWidth/2-charWidth*nodes[i].label.length/2, 
-        nodes[i].pos[1]+rectHeight/2+charWidth/2);
+        nodes[i].pos[0]+nodeSize.width/2-charWidth*nodes[i].label.length/2, 
+        nodes[i].pos[1]+nodeSize.height/2+charWidth/2);
     }
   }
 
   onMouseDownCanvas(event: React.MouseEvent<HTMLElement>) {
-    //markNode - пытатся найти элемент по координа там и выделить в случае успеха возвращает true
-    /*if(this.props.model.markNode(event.nativeEvent.offsetX, event.nativeEvent.offsetY)) {
-      (this.refs.canvas as HTMLElement).onmousemove = (function(e:MouseEvent) {
-        this.model.setCoordMarkNode(e.offsetX, e.offsetY);
-      }).bind(this);
-    }*/
+    this.pervPos = [event.nativeEvent.offsetX, event.nativeEvent.offsetY]
+    if(this.props.model.setMarkNode(event.nativeEvent.offsetX, event.nativeEvent.offsetY)) {
+      (this.refs.canvas as HTMLElement).onmousemove = 
+        function(e:MouseEvent) {
+          this.props.model.moveMarkNode(e.offsetX-this.pervPos[0], e.offsetY-this.pervPos[1]);
+          this.pervPos = [e.offsetX, e.offsetY];
+        }.bind(this);
+    }
   }
 
   render() {

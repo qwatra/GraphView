@@ -31,7 +31,8 @@ function generate() {
         Math.round(Math.random() * (512 - maxNodeSize.width)),
         Math.round(Math.random() * (256 - maxNodeSize.height))
       ],
-      color: nodePalette[i % nodePalette.length]
+      color: nodePalette[i % nodePalette.length],
+      selected: false
     };
   });
   
@@ -46,7 +47,7 @@ function generate() {
   model.setNodesAndLinks(nodes, links);
 }
 
-const models = [ model ];
+const models = [ model, model ];
 // 1. нужно добавить возможность выделять несколько узлов
 //    ctrl + click по невыделенному узлу выделяет его
 //    ctrl + click по выделенному узлу снимает выделение
