@@ -76,12 +76,6 @@ export class GraphModel extends BaseModel {
           this.copyPosForDaD[i][1]+delta.deltaY];
       }
     }
-    /*for(var i = 0; i<this.nodes.length; i++) {
-      if(this.nodes[i].selected) {
-        this.nodes[i].pos = [this.copyPosForDaD[i][0]+newCursorPosX-this.cursorStartPos[0], 
-          this.copyPosForDaD[i][1]+newCursorPosY-this.cursorStartPos[1]];
-      }
-    }*/
     this.updateViews();
   }
 
