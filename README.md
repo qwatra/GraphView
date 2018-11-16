@@ -4,6 +4,8 @@ Web-приложение написанное на typescript+react которо
 
 Запуск
 -------
+```bash
 npm install
 npm run start - запуск webpack-dev-server
 npm run dev - сборка
+```
